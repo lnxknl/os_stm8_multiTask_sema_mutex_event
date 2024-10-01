@@ -1,0 +1,95 @@
+diff --git a/events.c b/events.c
+index a0404b1..0a5303a 100644
+--- a/events.c
++++ b/events.c
+@@ -14,7 +14,7 @@ void InitEvent(Event *event) __naked {
+ /*
+  * Wait for next raise event call
+  */
+-void WaitEvent(Event *event) __naked {
++void WaitEvent(Event *event) __naked {// @NOTE 
+     (void)event;
+ // @formatter:off
+ __asm
+diff --git a/main.c b/main.c
+index aaed795..6581571 100644
+--- a/main.c
++++ b/main.c
+@@ -42,7 +42,7 @@ Task ledBlink_Task;
+  * and preempt the currently running taks
+  */
+ 
+-void timerISR()__interrupt(0)
++void timerISR()__interrupt(0)// @NOTE 
+ {
+ // @formatter:off
+ __asm
+@@ -79,7 +79,7 @@ const QueueDescription queueDescription[] = {
+ 
+ const TaskDescription taskDescription[] = {
+         {.task = &syncToISR_Task, .pc = &syncedToISR, .sp = syncedToISR_SP, .stackSize = sizeof(syncedToISR_SP)},
+-        {.task= &ledBlink_Task, .pc = &ledBlink, .sp = ledBlink_SP, .stackSize = sizeof(ledBlink_SP)},
++        {.task= &ledBlink_Task, .pc = &ledBlink, .sp = ledBlink_SP, .stackSize = sizeof(ledBlink_SP)},// @NOTE 
+ };
+ 
+ const SemaDescription semaDescription[] = {
+diff --git a/tasks.c b/tasks.c
+index 831d61f..09d8bb1 100644
+--- a/tasks.c
++++ b/tasks.c
+@@ -14,7 +14,7 @@ extern uint16_t taskSliceTicks; // ticks left for this task
+ extern void InitTimers();
+ #endif
+ 
+-void (*_queueFunction)(); // option passed to vary which function is called to queue
++void (*_queueFunction)(); // option passed to vary which function is called to queue// @NOTE 
+ QList *_taskQueue;    // option passed to vary which queue the task is moved
+ 
+ const uint16_t taskDescriptionSize = sizeof(TaskDescription);
+diff --git a/tasks.h b/tasks.h
+index 3e2ad36..01a2f75 100644
+--- a/tasks.h
++++ b/tasks.h
+@@ -43,9 +43,9 @@ extern QNode readyTasks;    // queue of tasks ready to go
+ 
+ #pragma callee_saves InitTasks, Yield, _IsrYieldJmp
+ 
+-extern void Yield();        // if there is no current active task then never returns to caller
++extern void Yield();        // if there is no current active task then never returns to caller// @NOTE 
+ 
+-#define YieldFromISR()      __asm__("ldw x,#_readyTasks\nldw y,#__QNodeLinkNextInXY\njp __IsrYieldToXatY")
++#define YieldFromISR()      __asm__("ldw x,#_readyTasks\nldw y,#__QNodeLinkNextInXY\njp __IsrYieldToXatY")// @NOTE 
+ 
+ #ifdef OPT_PRESERVE_GLOBAL_STATE
+ // Global State Save/Restore requires two user functions to implement pushing/poping global state variables
+diff --git a/timers.c b/timers.c
+index 4c09c62..feaa7ff 100644
+--- a/timers.c
++++ b/timers.c
+@@ -94,7 +94,7 @@ __endasm;
+  *  X - timer
+  *  Y - task
+  */
+-void _AddTaskYtoTimerX()__naked
++void _AddTaskYtoTimerX()__naked// @NOTE 
+ {
+ //    Task *other;
+ //    if (timer->ticks > node->ticks) {
+@@ -247,7 +247,7 @@ __endasm;
+  *
+  *
+  */
+-void _DoTimerTickInXY()__naked
++void _DoTimerTickInXY()__naked// @NOTE 
+ {
+ //    // decrement ticks and if 0 schedule all nodes whose ticks are 0
+ //    if (timer->ticks) {
+@@ -297,7 +297,7 @@ __endasm;
+ 
+ __asm
+     exgw    x,y
+-    ldw     x,#_readyTasks ; x = readyTasks, y = task
++    ldw     x,#_readyTasks ; x = readyTasks, y = task// @NOTE 
+     call    [__queueFunction]
+     jra     dotimer.do
+ 
